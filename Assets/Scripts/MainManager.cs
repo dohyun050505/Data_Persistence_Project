@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,6 +13,7 @@ public class MainManager : MonoBehaviour
 
     public Text ScoreText;
     public GameObject GameOverText;
+    public Text bestScore;
     
     private bool m_Started = false;
     private int m_Points;
@@ -24,6 +26,8 @@ public class MainManager : MonoBehaviour
     {
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
+
+        displayBestScore();
         
         int[] pointCountArray = new [] {1,1,2,2,5,5};
         for (int i = 0; i < LineCount; ++i)
@@ -35,6 +39,17 @@ public class MainManager : MonoBehaviour
                 brick.PointValue = pointCountArray[i];
                 brick.onDestroyed.AddListener(AddPoint);
             }
+        }
+    }
+    public void displayBestScore()
+    {
+        if (PersistenceManager.recordScore == 0)
+        {
+            bestScore.text = "Best Score: 0";
+        }
+        else
+        {
+            bestScore.text = "Best Score : " + PersistenceManager.recordScore + " by " + PersistenceManager.recordUserName;
         }
     }
 
@@ -55,9 +70,21 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            if (PersistenceManager.recordScore < m_Points)
+            {
+                PersistenceManager.recordScore = m_Points;
+                PersistenceManager.recordUserName = PersistenceManager.currentUserName;
+                PersistenceManager.SaveRecord();
+            }
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                displayBestScore();
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                //SceneManager.LoadScene(0);
+            }
+            else if(Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0);
             }
         }
     }
